@@ -7,26 +7,32 @@ public class Main {
     public static void main(String[] args) throws IOException, InterruptedException {
         User user = createSomeUser();
 
-//        User createdUser = HttpUtil.postUser(user);
-//        System.out.println("createdUser = " + createdUser);
+        User createdUser = HttpUtil.postUser(user);
+        System.out.println("createdUser = " + createdUser);
 
-//        User updatedUser = HttpUtil.putUser(7, user);
-//        System.out.println("updatedUser = " + updatedUser);
+        User updatedUser = HttpUtil.putUser(7, user);
+        System.out.println("updatedUser = " + updatedUser);
 //
-//        int deleteUser = HttpUtil.deleteUser(8);
-//        System.out.println("deleteUser.statusCode = " + deleteUser);
+        int deleteUser = HttpUtil.deleteUser(8);
+        System.out.println("deleteUser.statusCode = " + deleteUser);
 
-//        List<User> allUsers = HttpUtil.getAllUsers();
-//        System.out.println("allUsers = " + allUsers);
+        List<User> allUsers = HttpUtil.getAllUsers();
+        System.out.println("allUsers = " + allUsers);
 
-//        User getUserById = HttpUtil.getUserById(7);
-//        System.out.println("getUserById = " + getUserById);
+        User getUserById = HttpUtil.getUserById(7);
+        System.out.println("getUserById = " + getUserById);
 
-//        User getUserByUsername = HttpUtil.getUserByUsername("Samantha");
-//        System.out.println("getUserByUsername = " + getUserByUsername);
+        User getUserByUsername = HttpUtil.getUserByUsername("Samantha");
+        System.out.println("getUserByUsername = " + getUserByUsername);
 
-        int maxId = HttpUtil.maxId();
-        System.out.println("maxId = " + maxId);
+//        int maxId = HttpUtil.maxId(5);
+//        System.out.println("maxId = " + maxId);
+
+        List<Comment> comments = HttpUtil.getComments(5);
+        System.out.println("comments = " + comments);
+
+        List<Todo> todos = HttpUtil.getOpenTodos(5);
+        System.out.println("todos = " + todos);
     }
 
     private static User createSomeUser() {
