@@ -20,7 +20,7 @@ public class HttpUtil {
     private static final String TODOS_URL = "todos";
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
     private static final Gson GSON = new Gson();
-    private static final String RELATIVE_PATH = ".\\src\\main\\resources\\out";
+    private static final String RELATIVE_PATH = "./src/main/resources/out";
 
     public static User postUser(User user) throws IOException, InterruptedException {
         String requestBody = GSON.toJson(user);
@@ -80,33 +80,29 @@ public class HttpUtil {
                 .GET()
                 .build();
         HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        List<User> users = GSON.fromJson(response.body(), new TypeToken<List<User>>() {}.getType());
+        List<User> users = GSON.fromJson(response.body(), new TypeToken<List<User>>() {
+        }.getType());
         return users.stream()
                 .filter(user -> user.getUsername().contains(userName))
                 .findFirst()
                 .orElseThrow();
     }
 
-    public static int maxId(int userId) throws IOException, InterruptedException {
+    public static int getLastPostId(int userId) throws IOException, InterruptedException {
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(String.format("%s/%d/%s", USER_URL, userId, USER_POSTS_URL)))
                 .GET().build();
         HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        List<Post> posts = GSON.fromJson(response.body(), new TypeToken<List<Post>>() {}.getType());
+        List<Post> posts = GSON.fromJson(response.body(), new TypeToken<List<Post>>() {
+        }.getType());
         return posts.stream()
                 .max(Comparator.comparingInt(Post::getId))
                 .get()
                 .getId();
     }
 
-    public static List<Comment> getComments(int userId) throws IOException, InterruptedException {
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(String.format("%s/%d/%s", POSTS_URL, maxId(userId), COMMENTS_URL)))
-                .GET()
-                .build();
-        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-
-        File comments = new File(String.format("%s\\user-%d-post-%d-comments.json", RELATIVE_PATH, userId, maxId(userId)));
+    public static void writeCommentsToFile(HttpResponse<String> response, String name) {
+        File comments = new File(name);
         if (!comments.exists()) {
             comments.getParentFile().mkdirs();
             try {
@@ -120,7 +116,19 @@ public class HttpUtil {
         } catch (IOException e) {
             System.err.println("Exception!!!" + e.getMessage());
         }
-        return GSON.fromJson(response.body(), new TypeToken<List<Comment>>() {}.getType());
+    }
+
+    public static List<Comment> getLastPostCommentsByUserId(int userId) throws IOException, InterruptedException {
+        int maxUserId = getLastPostId(userId);
+        String fileName = String.format("%s/user-%d-post-%d-comments.json", RELATIVE_PATH, userId, maxUserId);
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(String.format("%s/%d/%s", POSTS_URL, maxUserId, COMMENTS_URL)))
+                .GET()
+                .build();
+        HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+        writeCommentsToFile(response, fileName);
+        return GSON.fromJson(response.body(), new TypeToken<List<Comment>>() {
+        }.getType());
     }
 
     public static List<Todo> getOpenTodos(int userId) throws IOException, InterruptedException {
@@ -129,7 +137,8 @@ public class HttpUtil {
                 .GET()
                 .build();
         HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
-        final List<Todo> todos = GSON.fromJson(response.body(), new TypeToken<List<Todo>>() {}.getType());
+        final List<Todo> todos = GSON.fromJson(response.body(), new TypeToken<List<Todo>>() {
+        }.getType());
         return todos.stream()
                 .filter((todo) -> !todo.isCompleted())
                 .collect(Collectors.toList());
